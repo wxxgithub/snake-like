@@ -1,5 +1,5 @@
-clear;
-clc;
+clear
+clc
 %%
 %初始参数设置
 bodys = 0 : 0.1 : 1;                    %身体长度0.1
@@ -25,8 +25,8 @@ for i = 1 : nodes                                                          %转换
                        * [xy_nodes(1,i);xy_nodes(2,i)] + coordinate_nodes(1:2,i); 
 end
 plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-k.');%输出结果检查--初始化构造身体模型
-axis([-20 40 -20 40]);
-%hold on
+axis([-40 60 -40 60]);
+hold on
 
 %%
 %无偏转情况下前行 
@@ -72,7 +72,7 @@ axis([-20 40 -20 40]);
 
 %%
 %
-for count = 1:5
+for count = 1:7
     for i = 1 : nodes-1
        xy_nodes(1:2,nodes+1-i) = [xy_nodes(1:2,nodes-i)];                  %除头结点外，其余结点一次传递坐标值
        coordinate_nodes(1:3,nodes+1-i) = coordinate_nodes(1:3,nodes-i);    %除头结点外，其余结点对应坐标系原点及角度值
@@ -88,9 +88,11 @@ for count = 1:5
        %plot(xy_nodes(1,:),xy_nodes(2,:),'-r.');
        %hold on
        plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-k.');
-       axis([-10 40 -10 40]);
+       axis([-40 60 -40 60]);
        pause(0.1);
 end
+%%
+%改变运动方向，即调节次坐标系（改变次坐标系的原点和与世界坐标系的逆时针方向的角度）
 for count = 1:1
     for i = 1 : nodes-1
        xy_nodes(1:2,nodes+1-i) = [xy_nodes(1:2,nodes-i)];                  %除头结点外，其余结点一次传递坐标值
@@ -109,7 +111,7 @@ for count = 1:1
        %plot(xy_nodes(1,:),xy_nodes(2,:),'-r.');
        %hold on
        %plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-k.');%实际中不能显示这条命令，头结点会停留一下
-       axis([-10 40 -10 40]);
+      axis([-40 60 -40 60]);
        pause(0.1);
 end
 for count = 1:20
@@ -119,7 +121,7 @@ for count = 1:20
        coordinate_nodes(1:3,nodes+1-i) = coordinate_nodes(1:3,nodes-i);    %除头结点外，其余结点对应坐标系原点及角度值
     end
        %！！！在原次坐标系中，第一，区分各个坐标系中的头尾结点及其变化，第二，相位之间的变化。
-       xy_nodes(1:2,1) = [xy_nodes(1,1)-pi/4;sin(xy_nodes(1,1)-pi/4+pi/2)];%%问题出现在这里
+       xy_nodes(1:2,1) = [xy_nodes(1,1)-pi/4;sin(xy_nodes(1,1)-pi/4+5*pi/4)];%%问题出现在这里
        coordinate_nodes(1:3,1) = coordinate_nodes(1:3,1);
     for i = 1 : nodes                                                      %转换为主坐标系中
        xy_nodes_world(1:2,i) = [cos(coordinate_nodes(3,i)) -sin(coordinate_nodes(3,i));sin(coordinate_nodes(3,i)) cos(coordinate_nodes(3,i))] ...
@@ -127,8 +129,51 @@ for count = 1:20
     end
        %调试用...
        %plot(xy_nodes(1,:),xy_nodes(2,:),'-r.');
-       hold on
+       %hold on
        plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-k.');
-       axis([-10 40 -10 40]);
+       axis([-40 60 -40 60]);
+       pause(0.1);
+end
+%%
+%改变运动方向，即调节次坐标系（改变次坐标系的原点和与世界坐标系的逆时针方向的角度）
+for count = 1:1
+    for i = 1 : nodes-1
+       xy_nodes(1:2,nodes+1-i) = [xy_nodes(1:2,nodes-i)];                  %除头结点外，其余结点一次传递坐标值
+       coordinate_nodes(1:3,nodes+1-i) = coordinate_nodes(1:3,nodes-i);    %除头结点外，其余结点对应坐标系原点及角度值
+    end
+       %！！！在原次坐标系中，第一，区分各个坐标系中的头尾结点及其变化，第二，相位之间的变化。
+       xy_nodes(1:2,1) = [0;0];
+       coordinate_nodes(1:3,1) = [xy_nodes_world(1:2,1);coordinate_nodes(3,i)-pi/4];            %%坐标系的角度是逆时针
+       %plot(xy_nodes(1,:),xy_nodes(2,:),'-k.');%调试用
+       axis([-40 100 -40 100]);
+    for i = 1 : nodes                                                      %转换为主坐标系中
+       xy_nodes_world(1:2,i) = [cos(coordinate_nodes(3,i)) -sin(coordinate_nodes(3,i));sin(coordinate_nodes(3,i)) cos(coordinate_nodes(3,i))] ...
+                               * [xy_nodes(1,i);xy_nodes(2,i)] + coordinate_nodes(1:2,i); 
+    end
+       %调试用...
+       %plot(xy_nodes(1,:),xy_nodes(2,:),'-r.');
+       %hold on
+       %plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-k.');%实际中不能显示这条命令，头结点会停留一下
+       axis([-40 60 -40 60]);
+       pause(0.1);
+end
+for count = 1:20
+    %break;%调试用
+    for i = 1 : nodes-1
+       xy_nodes(1:2,nodes+1-i) = [xy_nodes(1:2,nodes-i)];                  %除头结点外，其余结点依次传递坐标值
+       coordinate_nodes(1:3,nodes+1-i) = coordinate_nodes(1:3,nodes-i);    %除头结点外，其余结点对应坐标系原点及角度值
+    end
+       %！！！在原次坐标系中，第一，区分各个坐标系中的头尾结点及其变化，第二，相位之间的变化。
+       xy_nodes(1:2,1) = [xy_nodes(1,1)-pi/4;sin(xy_nodes(1,1)-pi/4+5*pi/4)];%%问题出现在这里
+       coordinate_nodes(1:3,1) = coordinate_nodes(1:3,1);
+    for i = 1 : nodes                                                      %转换为主坐标系中
+       xy_nodes_world(1:2,i) = [cos(coordinate_nodes(3,i)) -sin(coordinate_nodes(3,i));sin(coordinate_nodes(3,i)) cos(coordinate_nodes(3,i))] ...
+                               * [xy_nodes(1,i);xy_nodes(2,i)] + coordinate_nodes(1:2,i); 
+    end
+       %调试用...
+       %plot(xy_nodes(1,:),xy_nodes(2,:),'-r.');
+       %hold on
+       plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-k.');
+       axis([-40 60 -40 60]);
        pause(0.1);
 end
