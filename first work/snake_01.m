@@ -4,6 +4,7 @@ function snake_01()
 %清除
 clear;
 clc;
+
 %%
 %初始参数设置
 bodys = 0 : 0.1 : 1;                    %身体长度0.1
@@ -111,7 +112,7 @@ function display(xy_nodes_world)
       
       %plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-r.');
       %plot(nodes_trajectory(1,:),nodes_trajectory(2,:),'-k.');
-      plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-r.',nodes_trajectory(1,:),nodes_trajectory(2,:),'-k.');
+      plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-r.',nodes_trajectory(1,:),nodes_trajectory(2,:),'-k');
       
       axis([-40 40 -40 40]);
       axis square;
