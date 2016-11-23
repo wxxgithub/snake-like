@@ -28,9 +28,11 @@ global detect_t;
 detect_t = 5;
 
 [xy_nodes,coordinate_nodes,xy_nodes_world] = snake_init(25,0,0);
-
-for count = 1:22
+      figure ;
+for count = 1:200
     [xy_nodes,coordinate_nodes,xy_nodes_world] = snake_forward(xy_nodes,coordinate_nodes);
+    
+    disp('count = ');disp(count);
     display(xy_nodes,coordinate_nodes,xy_nodes_world);
     %调试
     %if mod(count,30) == 0 
@@ -40,11 +42,11 @@ for count = 1:22
     
     [xy_nodes,coordinate_nodes,xy_nodes_world] = fun(xy_nodes,coordinate_nodes,xy_nodes_world);
     %%参数查看
-    %disp('count = ');disp(count);
+
     %disp('xy_nodes_world = ');disp(xy_nodes_world);
     %disp('coordinate_nodes = ');disp(coordinate_nodes);
-    real_distance = detect_distance(xy_nodes,coordinate_nodes,xy_nodes_world);
-    disp('real_distance = 文字可否');disp(real_distance(1,:,:));
+    %real_distance = detect_distance(xy_nodes,coordinate_nodes,xy_nodes_world);
+    %disp('real_distance = 文字可否');disp(real_distance(1,:,:));
 end
 
 end
@@ -113,6 +115,7 @@ function display(xy_nodes,coordinate_nodes,xy_nodes_world)
     global nodes;  
     global obstacle_xy;
       nodes_trajectory = [nodes_trajectory xy_nodes_world(:,nodes)];
+
       plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-r.',nodes_trajectory(1,:),nodes_trajectory(2,:),'-k.');
       
       obstacle(obstacle_xy(3,1),obstacle_xy(1,1),obstacle_xy(2,1),300,-pi/6);
@@ -132,7 +135,7 @@ function display(xy_nodes,coordinate_nodes,xy_nodes_world)
       
       hold off;
       
-      axis([-40 40 -40 40]);
+      axis([-50 50 -50 50]);
       axis square;
       pause(0.1);
 end
@@ -193,42 +196,113 @@ end
 function [x,y] = one_direction(xy_nodes,coordinate_nodes,xy_nodes_world,alpha)
 %检测方向判断
     theta = mod(coordinate_nodes(3,1)+alpha,2*pi);
-    k = tan(theta);
-    if theta >= 0 && theta <= pi/2
+    %k = tan(theta);
+    disp(theta);
+    if theta >= 0 && theta <= pi/4
         x = 40;
         y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);
-    else if theta <= pi
-        x = -40;
-        y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);
-    else if theta <= 3*pi/2
+        if y > 40
+            y = 40;
+            x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        elseif y < -40
+            y = -40;
+            x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        end
+    elseif theta < pi/2
+        y = 40;  
+        x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);%k/1应该是，想当然害死人，严谨哈
+        if x > 40
+            x =40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        elseif x < -40
+            x = -40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        end
+    elseif theta == pi/2
+        x = xy_nodes_world(1,1);  
+        y = 40;       
+    elseif theta <= 3*pi/4
+        y = 40;  
+        x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        if x > 40
+            x =40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        elseif x < -40
+            x = -40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        end       
+    elseif theta <= pi
         x = -40; 
         y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);
-    else if theta 
+        if y > 40
+            y = 40;
+            x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        elseif y < -40
+            y = -40;
+            x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        end        
+     elseif theta <= 5*pi/4
+        x = -40; 
+        y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);
+        if y > 40
+            y = 40;
+            x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        elseif y < -40
+            y = -40;
+            x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        end         
+     elseif theta < 3*pi/2
+        y = -40;  
+        x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        if x > 40
+            x =40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        elseif x < -40
+            x = -40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        end
+     elseif theta == 3*pi/2
+        x = xy_nodes_world(1,1);  
+        y = -40; 
+     elseif theta <= 7*pi/4
+        y = -40;  
+        x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        if x > 40
+            x =40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        elseif x < -40
+            x = -40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        end
+     elseif theta <= 2*pi
         x = 40; 
         y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);
-         end
-         end
-         end    
+        if y > 40
+            y = 40;
+            x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        elseif y < -40
+            y = -40;
+            x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        end          
     end
 end
 
-%function dis_test(xy_nodes,coordinate_nodes,xy_nodes_world)
-%%三个方向上的射线显示
-%    terminal_pos = three_direction(xy_nodes,coordinate_nodes,xy_nodes_world);
-%    line([xy_nodes_world(1,1) terminal_pos(1,1)],[xy_nodes_world(2,1) terminal_pos(2,1)],'LineStyle','-.','Color','r');
-%    line([xy_nodes_world(1,1) terminal_pos(1,2)],[xy_nodes_world(2,1) terminal_pos(2,2)],'LineStyle','-.','Color','r');
-%    line([xy_nodes_world(1,1) terminal_pos(1,3)],[xy_nodes_world(2,1) terminal_pos(2,3)],'LineStyle','-.','Color','r');  
-%end
-function dis_test(xy_nodes,coordinate_nodes,xy_nodes_world)
+function [real_distance,min_distance]= distance_123(xy_nodes,coordinate_nodes,xy_nodes_world)
 %三个方向上的射线显示
     terminal_pos = three_direction(xy_nodes,coordinate_nodes,xy_nodes_world);
     real_distance = detect_distance(xy_nodes,coordinate_nodes,xy_nodes_world);
-    [M1,I1]= min(real_distance(1,:,3));
-    [M2,I2]= min(real_distance(2,:,3));
-    [M3,I3]= min(real_distance(3,:,3));
-    line([xy_nodes_world(1,1) real_distance(1,I1,1)],[xy_nodes_world(2,1) real_distance(1,I1,2)],'LineStyle','-.','Color','r');
-    line([xy_nodes_world(1,1) real_distance(2,I2,1)],[xy_nodes_world(2,1) real_distance(2,I2,2)],'LineStyle','-.','Color','r');
-    line([xy_nodes_world(1,1) real_distance(3,I3,1)],[xy_nodes_world(2,1) real_distance(3,I3,2)],'LineStyle','-.','Color','r');  
+    [min_distance(1,1),min_distance(2,1)]= min(real_distance(1,:,3));%前方探测距离与坐标索引
+    [min_distance(1,2),min_distance(2,2)]= min(real_distance(2,:,3));%左方探测距离与坐标索引
+    [min_distance(1,3),min_distance(2,3)]= min(real_distance(3,:,3));%右方探测距离与坐标索引
+        disp('探测的距离：前   左   右');disp(min_distance(1,1:3));
+end
+
+function dis_test(xy_nodes,coordinate_nodes,xy_nodes_world)
+%三个方向上的射线显示
+    [real_distance,min_distance]= distance_123(xy_nodes,coordinate_nodes,xy_nodes_world);
+    line([xy_nodes_world(1,1) real_distance(1,min_distance(2,1),1)],[xy_nodes_world(2,1) real_distance(1,min_distance(2,1),2)],'LineStyle','-.','Color','r');
+    line([xy_nodes_world(1,1) real_distance(2,min_distance(2,2),1)],[xy_nodes_world(2,1) real_distance(2,min_distance(2,2),2)],'LineStyle','-.','Color','r');
+    line([xy_nodes_world(1,1) real_distance(3,min_distance(2,3),1)],[xy_nodes_world(2,1) real_distance(3,min_distance(2,3),2)],'LineStyle','-.','Color','r');  
 end
 
 function terminal_pos = three_direction(xy_nodes,coordinate_nodes,xy_nodes_world)
@@ -266,13 +340,13 @@ function real_xyd = segmentAndcicle(xy1,xy2,xy3,r)
                 real_xyd(3,1) = sqrt((x2-x1)^2+(y2-y1)^2);
             end
     else                %表示相交两点
-            if u1 < 0 && u2 < 0
+            if (u1 < 0) && (u2 < 0)                                %线段在圆外，其反向延长线相交（无效）
                 real_xyd(1:2,1) = [x2;y2];
                 real_xyd(3,1) = sqrt((x2-x1)^2+(y2-y1)^2);
-            elseif u1 > 1 && u2 > 1
+            elseif (u1 > 1) && (u2 > 1)                            %线段在圆外，其正向延长线相交（无效）
                 real_xyd(1:2,1) = [x2;y2];
                 real_xyd(3,1) = sqrt((x2-x1)^2+(y2-y1)^2); 
-            elseif (u1 > 0 && u1 < 1) && (u2 > 0 && u2 < 1)
+            elseif (u1 > 0 && u1 < 1) && (u2 > 0 && u2 < 1)    %线段与圆相交两点（有效）
                 cross1(1:2,1) = [x1+u1*(x2-x1);y1+u1*(y2-y1)];
                 cross1(3,1) = sqrt((cross1(1,1)-x1)^2+(cross1(2,1)-y1)^2);
                 cross2(1:2,1) = [x1+u2*(x2-x1);y1+u2*(y2-y1)];
