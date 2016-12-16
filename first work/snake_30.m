@@ -1,6 +1,6 @@
-function snake_01()
+function snake_20()
 %仿真实验0.2版
-%增加了对雷达、超声红外等一系列测距传感器的仿真
+%结合仿真出的距离传感器，做相应的控制算法if-else仿真
 %%
 %清除
 clear;
@@ -28,19 +28,23 @@ global detect_t;
 detect_t = 5;
 
 [xy_nodes,coordinate_nodes,xy_nodes_world] = snake_init(25,0,0);
-      figure ;
-for count = 1:200
+%导入模糊规则库
+    fisMat = readfis('fuzzy_02');
+     %figure ;
+for count = 1:100
     [xy_nodes,coordinate_nodes,xy_nodes_world] = snake_forward(xy_nodes,coordinate_nodes);
     
-    disp('count = ');disp(count);
+    %disp('count = ');disp(count);
+    disp(sprintf('\ncount = %d',count));
     display(xy_nodes,coordinate_nodes,xy_nodes_world);
     %调试
     %if mod(count,30) == 0 
     %    [xy_nodes,coordinate_nodes,xy_nodes_world] = snake_turn(xy_nodes,coordinate_nodes,xy_nodes_world,pi/4);
     %end
-    [xy_nodes,coordinate_nodes,xy_nodes_world] = decision(xy_nodes,coordinate_nodes,xy_nodes_world);
+    [xy_nodes,coordinate_nodes,xy_nodes_world] = decisionFuzzy(xy_nodes,coordinate_nodes,xy_nodes_world,fisMat);
+    %[xy_nodes,coordinate_nodes,xy_nodes_world] = decision(xy_nodes,coordinate_nodes,xy_nodes_world);
     
-    [xy_nodes,coordinate_nodes,xy_nodes_world] = fun(xy_nodes,coordinate_nodes,xy_nodes_world);
+    %[xy_nodes,coordinate_nodes,xy_nodes_world]=fun(xy_nodes,coordinate_nodes,xy_nodes_world);%测试边界玩的
     %%参数查看
 
     %disp('xy_nodes_world = ');disp(xy_nodes_world);
@@ -114,9 +118,11 @@ function display(xy_nodes,coordinate_nodes,xy_nodes_world)
     global nodes_trajectory;
     global nodes;  
     global obstacle_xy;
+    axisnum = 50;
       nodes_trajectory = [nodes_trajectory xy_nodes_world(:,nodes)];
 
-      plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-r.',nodes_trajectory(1,:),nodes_trajectory(2,:),'-k.');
+      plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-b.',nodes_trajectory(1,:),nodes_trajectory(2,:),'-k');
+      %plot(xy_nodes_world(1,:),xy_nodes_world(2,:),'-b.');
       
       obstacle(obstacle_xy(3,1),obstacle_xy(1,1),obstacle_xy(2,1),300,-pi/6);
       obstacle(obstacle_xy(3,2),obstacle_xy(1,2),obstacle_xy(2,2),300,-pi/4);
@@ -135,7 +141,7 @@ function display(xy_nodes,coordinate_nodes,xy_nodes_world)
       
       hold off;
       
-      axis([-50 50 -50 50]);
+      axis([-axisnum axisnum -axisnum axisnum]);
       axis square;
       pause(0.1);
 end
@@ -162,7 +168,8 @@ end
 
 %%
 %最近距离与转角的关系--关键
-function [xy_nodes,coordinate_nodes,xy_nodes_world] = decision(xy_nodes,coordinate_nodes,xy_nodes_world)
+function [xy_nodes,coordinate_nodes,xy_nodes_world] = decision0(xy_nodes,coordinate_nodes,xy_nodes_world)
+%最初的决策试验
     global obstacle_xy;
     global detect_t;
 
@@ -183,6 +190,150 @@ function [xy_nodes,coordinate_nodes,xy_nodes_world] = decision(xy_nodes,coordina
     end
 end
 
+function [xy_nodes,coordinate_nodes,xy_nodes_world] = decision1(xy_nodes,coordinate_nodes,xy_nodes_world)
+%根据是三个方向上的探测的距离信息
+    global detect_t;
+    [real_distance,min_distance]= distance_123(xy_nodes,coordinate_nodes,xy_nodes_world);
+    forward_dis = min_distance(1,1);
+    left_dis = min_distance(1,2);
+    right_dis = min_distance(1,3);
+    if forward_dis <= 5
+        if left_dis <= 5
+            if right_dis <= 5
+                angle = pi;
+            elseif right_dis <= 10
+                angle = 7*pi/4;
+            else
+                angle = 11*pi/5;
+            end
+        elseif left_dis <= 10
+            if right_dis <= 5
+                angle = pi/4;
+            elseif right_dis <= 10
+                angle = 7*pi/4;
+            else
+                angle = 11*pi/5;
+            end           
+        else
+            if right_dis <= 5
+                angle = pi/4;
+            elseif right_dis <= 10
+                angle = pi/4;
+            else
+                angle = pi/4;
+            end
+        end
+    elseif forward_dis <= 10
+         if left_dis <= 5
+            if right_dis <= 5
+                angle = 0;
+            elseif right_dis <= 10
+                angle = pi/6;
+            else
+                angle = pi/5;
+            end
+        elseif left_dis <= 10
+            if right_dis <= 5
+                angle = 7*pi/6;
+            elseif right_dis <= 10
+                angle = 7*pi/6;
+            else
+                angle = 7*pi/6;
+            end           
+        else
+            if right_dis <= 5
+                angle = 7*pi/4;
+            elseif right_dis <= 10
+                angle = 7*pi/4;
+            else
+                angle = 7*pi/4;
+            end
+        end
+    else 
+         if left_dis <= 5
+            if right_dis <= 5
+                angle = 7*pi/4;
+            elseif right_dis <= 10
+                angle = 7*pi/4;
+            else
+                angle = 7*pi/4;
+            end
+        elseif left_dis <= 10
+            if right_dis <= 5
+                angle = 7*pi/4;
+            elseif right_dis <= 10
+                angle = 7*pi/4;
+            else
+                angle = 7*pi/4;
+            end           
+        else
+            if right_dis <= 5
+                angle = 7*pi/4;
+            elseif right_dis <= 10
+                angle = 7*pi/4;
+            else
+                angle = 7*pi/4;
+            end
+        end
+    end
+    disp(sprintf('探测的距离：前方 = %f  左方 = %f   右方 = %f',min_distance(1,1),min_distance(1,2),min_distance(1,3)));
+    if detect_t <= 0
+       [xy_nodes,coordinate_nodes,xy_nodes_world] = snake_turn(xy_nodes,coordinate_nodes,xy_nodes_world,angle);
+       detect_t = 5;
+    end
+end
+
+function [xy_nodes,coordinate_nodes,xy_nodes_world] = decisionFuzzy(xy_nodes,coordinate_nodes,xy_nodes_world,fisMat)
+    %根据是三个方向上的探测的距离信息
+    global detect_t;
+    [real_distance,min_distance]= distance_123(xy_nodes,coordinate_nodes,xy_nodes_world);
+    forward_dis = min_distance(1,1);
+    left_dis = min_distance(1,2);
+    right_dis = min_distance(1,3);
+    disp(sprintf('探测的距离：前方 = %f  左方 = %f   右方 = %f',min_distance(1,1),min_distance(1,2),min_distance(1,3)));
+          angle = evalfis([forward_dis left_dis right_dis],fisMat);
+          angle = angle*3.14/180;
+ 
+    if detect_t <= 0 && angle~=0
+       %-angle才是右转
+       [xy_nodes,coordinate_nodes,xy_nodes_world] = snake_turn(xy_nodes,coordinate_nodes,xy_nodes_world,-angle);
+       detect_t = 6;
+       disp(sprintf('  偏转角度：   = %f',angle));
+    end
+           disp(sprintf('   detect_t   = %f',detect_t));
+           disp(sprintf('  每时刻偏转角度：   = %f',angle));
+end
+
+function [xy_nodes,coordinate_nodes,xy_nodes_world] = decision(xy_nodes,coordinate_nodes,xy_nodes_world)
+%根据是三个方向上的探测的距离信息
+    global detect_t;
+    [real_distance,min_distance]= distance_123(xy_nodes,coordinate_nodes,xy_nodes_world);
+    forward_dis = min_distance(1,1);
+    left_dis = min_distance(1,2);
+    right_dis = min_distance(1,3);
+    if forward_dis <= 15
+        if left_dis <= 15
+            if left_dis <= right_dis
+                angle = 7*pi/4;%右转
+            else
+                angle = 7*pi/4;
+            end
+        else
+            if left_dis <= right_dis
+                angle = 7*pi/4;
+            else
+                angle = 7*pi/4;
+            end
+        end
+    else
+                angle = 0;
+    end
+    disp(sprintf('探测的距离：前方 = %f  左方 = %f   右方 = %f',min_distance(1,1),min_distance(1,2),min_distance(1,3)));
+    if detect_t <= 0 && angle~=0
+       [xy_nodes,coordinate_nodes,xy_nodes_world] = snake_turn(xy_nodes,coordinate_nodes,xy_nodes_world,angle);
+       detect_t = 6;
+    end
+end
 %%
 %%测试玩
 %碰到边界后转大角度
@@ -197,7 +348,7 @@ function [x,y] = one_direction(xy_nodes,coordinate_nodes,xy_nodes_world,alpha)
 %检测方向判断
     theta = mod(coordinate_nodes(3,1)+alpha,2*pi);
     %k = tan(theta);
-    disp(theta);
+    %disp(theta);
     if theta >= 0 && theta <= pi/4
         x = 40;
         y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);
@@ -224,6 +375,13 @@ function [x,y] = one_direction(xy_nodes,coordinate_nodes,xy_nodes_world,alpha)
     elseif theta <= 3*pi/4
         y = 40;  
         x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        if x > 40
+            x =40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        elseif x < -40
+            x = -40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        end       
     elseif theta <= pi
         x = -40; 
         y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);
@@ -247,12 +405,26 @@ function [x,y] = one_direction(xy_nodes,coordinate_nodes,xy_nodes_world,alpha)
      elseif theta < 3*pi/2
         y = -40;  
         x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        if x > 40
+            x =40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        elseif x < -40
+            x = -40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        end
      elseif theta == 3*pi/2
         x = xy_nodes_world(1,1);  
         y = -40; 
      elseif theta <= 7*pi/4
         y = -40;  
         x = (1/tan(theta))*(y-xy_nodes_world(2,1))+xy_nodes_world(1,1);
+        if x > 40
+            x =40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        elseif x < -40
+            x = -40;
+            y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);            
+        end
      elseif theta <= 2*pi
         x = 40; 
         y = tan(theta)*(x-xy_nodes_world(1,1))+xy_nodes_world(2,1);
@@ -267,13 +439,13 @@ function [x,y] = one_direction(xy_nodes,coordinate_nodes,xy_nodes_world,alpha)
 end
 
 function [real_distance,min_distance]= distance_123(xy_nodes,coordinate_nodes,xy_nodes_world)
-%三个方向上的射线显示
+%求得三个方向上的距离信息
     terminal_pos = three_direction(xy_nodes,coordinate_nodes,xy_nodes_world);
     real_distance = detect_distance(xy_nodes,coordinate_nodes,xy_nodes_world);
     [min_distance(1,1),min_distance(2,1)]= min(real_distance(1,:,3));%前方探测距离与坐标索引
     [min_distance(1,2),min_distance(2,2)]= min(real_distance(2,:,3));%左方探测距离与坐标索引
     [min_distance(1,3),min_distance(2,3)]= min(real_distance(3,:,3));%右方探测距离与坐标索引
-        disp('探测的距离：前   左   右');disp(min_distance(1,1:3));
+        %disp(sprintf('探测的距离：前方 = %f  左方 = %f   右方 = %f',min_distance(1,1),min_distance(1,2),min_distance(1,3)));
 end
 
 function dis_test(xy_nodes,coordinate_nodes,xy_nodes_world)
@@ -282,6 +454,10 @@ function dis_test(xy_nodes,coordinate_nodes,xy_nodes_world)
     line([xy_nodes_world(1,1) real_distance(1,min_distance(2,1),1)],[xy_nodes_world(2,1) real_distance(1,min_distance(2,1),2)],'LineStyle','-.','Color','r');
     line([xy_nodes_world(1,1) real_distance(2,min_distance(2,2),1)],[xy_nodes_world(2,1) real_distance(2,min_distance(2,2),2)],'LineStyle','-.','Color','r');
     line([xy_nodes_world(1,1) real_distance(3,min_distance(2,3),1)],[xy_nodes_world(2,1) real_distance(3,min_distance(2,3),2)],'LineStyle','-.','Color','r');  
+        %disp('对应坐标：x y');disp(real_distance(1,min_distance(2,1),1:2));
+        disp(sprintf('对应坐标： x =     %f         %f          %f\n          y =     %f        %f         %f',...
+                                real_distance(1,min_distance(2,1),1),real_distance(2,min_distance(2,2),1),real_distance(3,min_distance(2,3),1),...
+                                real_distance(1,min_distance(2,1),2),real_distance(2,min_distance(2,2),2),real_distance(3,min_distance(2,3),2)));
 end
 
 function terminal_pos = three_direction(xy_nodes,coordinate_nodes,xy_nodes_world)
